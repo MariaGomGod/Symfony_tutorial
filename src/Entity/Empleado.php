@@ -45,7 +45,7 @@ class Empleado
     private $cargo;
 
     /**
-     * @ORM\Column(type="decimal", precision=10, scale=2, nullable=true)
+     * @ORM\Column(type="float", nullable=true)
      */
     private $salario;
 

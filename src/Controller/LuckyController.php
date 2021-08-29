@@ -14,10 +14,13 @@ class LuckyController extends AbstractController
     public function number(): Response
 
     {
-        $number = random_int(0, 100);
+        $number = random_int(1, 4);
+
+        $entityManager = $this->getDoctrine()->getManager();
+        $empleado = $entityManager->find('App\Entity\Empleado', $number);
 
         return $this->render('lucky/number.html.twig', [
-            'number' => $number,
+            'number' => $empleado->getNombre()
         ]);
     }
 

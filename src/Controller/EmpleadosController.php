@@ -13,9 +13,9 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class EmpleadosController extends AbstractController {
 
     /**
-     * @Route("/empleados", name = "get_empleado", methods = {"GET"})
-     */
-    public function getEmpleados(): Response 
+    * @Route("/empleados", name="get_empleados", methods={"GET"})
+    */
+    public function getEmpleados(): Response
     {
         $entityManager = $this->getDoctrine()->getManager();
         $repository = $entityManager->getRepository('App\Entity\Empleado');
@@ -27,30 +27,67 @@ class EmpleadosController extends AbstractController {
     }
 
     /**
-     * @Route("/empleados/{id}", name = "delete_empleado", methods = {"DELETE"})
-     */
-    public function removeEmpleado(int $id): Response
+    * @Route("/empleados/{id}", name="get_un_empleado", methods={"GET"})
+    */
+    public function getUnEmpleado(int $id): JsonResponse
     {
         $entityManager = $this->getDoctrine()->getManager();
+       
         $empleado = $entityManager->find('App\Entity\Empleado', $id);
 
-        if (!empty($empleado)) {
-            $empleado->setActivo(false);
-            $entityManager->flush();
-        }
+        $data = [
+            'id_empleado' => $empleado->getIdEmpleado(),
+            'nombre' => $empleado->getNombre(),
+            'apellidos' => $empleado->getApellidos(),
+            'f_nacimiento' => $empleado->getFNacimiento(),
+            'sexo' => $empleado->getSexo(),
+            'cargo' => $empleado->getCargo(),
+            'salario' => $empleado->getSalario(),
+            'activo' => $empleado->getActivo(),
+        ];
 
-        return new JsonResponse(['status' => 'Empleado borrado'], Response::HTTP_NO_CONTENT);
+        return new JsonResponse($data, Response::HTTP_OK);
     }
 
     /**
-     * @Route("/empleados/{id}", name = "update_empleado", methods = {"PUT"})
-     */
-    public function updateEmpleado(int $id, Request $request): Response
+    * @Route("/empleados", name="add_empleado", methods={"POST"})
+    */
+    public function addEmpleado(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+
+        if (empty($data['nombre']) || empty($data['apellidos']) || empty($data['f_nacimiento']) ||
+        empty($data['sexo']) || empty($data['cargo']) || empty($data['salario'])) {
+
+            throw new NotFoundHttpException('Error de validación!');
+        }
+
+        $empleado = new Empleado();
+        $empleado->setNombre($data['nombre'])
+                 ->setApellidos($data['apellidos'])
+                 ->setFNacimiento($data['f_nacimiento'])
+                 ->setSexo($data['sexo'])
+                 ->setCargo($data['cargo'])
+                 ->setSalario($data['salario'])
+                 ->setActivo(true);
+        
+        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager->persist($empleado);
+        $entityManager->flush();
+
+        return new JsonResponse(['status' => 'Empleado creado!'], Response::HTTP_CREATED);
+    }
+
+    /**
+    * @Route("/empleados/{id}", name="update_empleado", methods={"PUT"})
+    */
+    public function updateEmpleado(int $id, Request $request): JsonResponse
     {
         $entityManager = $this->getDoctrine()->getManager();
         $empleado = $entityManager->find('App\Entity\Empleado', $id);
 
         if (!empty($empleado)) {
+
             $data = json_decode($request->getContent(), true);
 
             empty($data['nombre']) ? true : $empleado->setNombre($data['nombre']);
@@ -59,39 +96,28 @@ class EmpleadosController extends AbstractController {
             empty($data['sexo']) ? true : $empleado->setSexo($data['sexo']);
             empty($data['cargo']) ? true : $empleado->setCargo($data['cargo']);
             empty($data['salario']) ? true : $empleado->setSalario($data['salario']);
-    
+
             $entityManager->flush();
         }
 
-        return new JsonResponse(['status' => 'Empleado modificado'], Response::HTTP_OK);
-        
+        return new JsonResponse(['status' => 'Empleado modificado!'], Response::HTTP_NO_CONTENT);
     }
 
     /**
-     * @Route("/empleados", name = "add_empleado", methods = {"POST"})
-     */
-    public function addEmpleado(Request $request): Response
+    * @Route("/empleados/{id}", name="delete_empleado", methods={"DELETE"})
+    */
+    public function deleteEmpleado(int $id): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
-        if (empty($data['nombre']) || empty($data['apellidos']) || empty($data['f_nacimiento']) ||
-        empty($data['sexo']) || empty($data['cargo']) || empty($data['salario'])) {
-            throw new NotFoundHttpException('Error de validación!');
+        $entityManager = $this->getDoctrine()->getManager();
+        $empleado = $entityManager->find('App\Entity\Empleado', $id);
+        
+        if (!empty($empleado)) {
+
+            $empleado->setActivo(false);
+            $entityManager->flush();
         }
 
-        $empleado = new Empleado();
-        $empleado->setNombre($data['nombre']);
-        $empleado->setApellidos($data['apellidos']);
-        $empleado->setFNacimiento($data['f_nacimiento']);
-        $empleado->setSexo($data['sexo']);
-        $empleado->setCargo($data['cargo']);
-        $empleado->setSalario($data['salario']);
-        $empleado->setActivo(true);
+        return new JsonResponse(['status' => 'Empleado borrado!'], Response::HTTP_NO_CONTENT);
 
-        $entityManager = $this->getDoctrine()->getManager();
-        $entityManager->persist($empleado);
-        $entityManager->flush();
-
-        return new JsonResponse(['status' => 'Empleado creado!'], Response::HTTP_CREATED);
     }
-
 }

@@ -2,11 +2,13 @@
 
 namespace App\Controller;
 
+use App\Entity\Empleado;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class EmpleadosController extends AbstractController {
 
@@ -16,8 +18,8 @@ class EmpleadosController extends AbstractController {
     public function getEmpleados(): Response 
     {
         $entityManager = $this->getDoctrine()->getManager();
-        $repository = $entityManager->getRepository(Empleado::class);
-        $empleados = $repository->findAll();
+        $repository = $entityManager->getRepository('App\Entity\Empleado');
+        $empleados = $repository->findBy(['activo' => true]);
 
         return $this->render('lucky/empleado.html.twig', [
             'Empleados' => $empleados
@@ -30,11 +32,14 @@ class EmpleadosController extends AbstractController {
     public function removeEmpleado(int $id): Response
     {
         $entityManager = $this->getDoctrine()->getManager();
-        $empleado = $entityManager->find(Empleado::class, $id);
-        $entityManager->remove($empleado);
-        $entityManager->flush();
-       
-        return new JsonResponse(Response::HTTP_NO_CONTENT);
+        $empleado = $entityManager->find('App\Entity\Empleado', $id);
+
+        if (!empty($empleado)) {
+            $empleado->setActivo(false);
+            $entityManager->flush();
+        }
+
+        return new JsonResponse(['status' => 'Empleado borrado'], Response::HTTP_NO_CONTENT);
     }
 
     /**
@@ -43,19 +48,50 @@ class EmpleadosController extends AbstractController {
     public function updateEmpleado(int $id, Request $request): Response
     {
         $entityManager = $this->getDoctrine()->getManager();
-        $empleado = $entityManager->find(Empleado::class, $id);
-        $data = json_decode($request->getContent(), true);
+        $empleado = $entityManager->find('App\Entity\Empleado', $id);
 
-        empty($data['nombre']) ? true : $empleado->setNombre($data['nombre']);
-        empty($data['apellidos']) ? true : $empleado->setApellidos($data['apellidos']);
-        empty($data['f_nacimiento']) ? true : $empleado->setFNacimiento($data['f_nacimiento']);
-        empty($data['sexo']) ? true : $empleado->setSexo($data['sexo']);
-        empty($data['cargo']) ? true : $empleado->setCargo($data['cargo']);
-        empty($data['salario']) ? true : $empleado->setSalario($data['salario']);
+        if (!empty($empleado)) {
+            $data = json_decode($request->getContent(), true);
 
-        $entityManager->flush();
+            empty($data['nombre']) ? true : $empleado->setNombre($data['nombre']);
+            empty($data['apellidos']) ? true : $empleado->setApellidos($data['apellidos']);
+            empty($data['f_nacimiento']) ? true : $empleado->setFNacimiento($data['f_nacimiento']);
+            empty($data['sexo']) ? true : $empleado->setSexo($data['sexo']);
+            empty($data['cargo']) ? true : $empleado->setCargo($data['cargo']);
+            empty($data['salario']) ? true : $empleado->setSalario($data['salario']);
+    
+            $entityManager->flush();
+        }
 
-        return new Response();
+        return new JsonResponse(['status' => 'Empleado modificado'], Response::HTTP_OK);
         
     }
+
+    /**
+     * @Route("/empleados", name = "add_empleado", methods = {"POST"})
+     */
+    public function addEmpleado(Request $request): Response
+    {
+        $data = json_decode($request->getContent(), true);
+        if (empty($data['nombre']) || empty($data['apellidos']) || empty($data['f_nacimiento']) ||
+        empty($data['sexo']) || empty($data['cargo']) || empty($data['salario'])) {
+            throw new NotFoundHttpException('Error de validación!');
+        }
+
+        $empleado = new Empleado();
+        $empleado->setNombre($data['nombre']);
+        $empleado->setApellidos($data['apellidos']);
+        $empleado->setFNacimiento($data['f_nacimiento']);
+        $empleado->setSexo($data['sexo']);
+        $empleado->setCargo($data['cargo']);
+        $empleado->setSalario($data['salario']);
+        $empleado->setActivo(true);
+
+        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager->persist($empleado);
+        $entityManager->flush();
+
+        return new JsonResponse(['status' => 'Empleado creado!'], Response::HTTP_CREATED);
+    }
+
 }

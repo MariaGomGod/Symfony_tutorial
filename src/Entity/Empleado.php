@@ -49,6 +49,11 @@ class Empleado
      */
     private $salario;
 
+    /**
+     * @ORM\Column(type="boolean", nullable=false)
+     */
+    private $activo;
+
     public function getIdEmpleado(): ?int
     {
         return $this->id_empleado;
@@ -129,6 +134,18 @@ class Empleado
     public function setSalario(?string $salario): self
     {
         $this->salario = $salario;
+
+        return $this;
+    }
+
+    public function getActivo(): ?bool
+    {
+        return $this->activo;
+    }
+
+    public function setActivo(bool $activo): self
+    {
+        $this->activo = $activo;
 
         return $this;
     }

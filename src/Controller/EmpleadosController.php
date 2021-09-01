@@ -104,6 +104,24 @@ class EmpleadosController extends AbstractController {
     }
 
     /**
+    * @Route("/empleados/{id}/activo", name="update_to_active_empleado", methods={"PUT"})
+    */
+    public function updateToActiveEmpleado(int $id): JsonResponse
+    {
+        $entityManager = $this->getDoctrine()->getManager();
+        $empleado = $entityManager->find('App\Entity\Empleado', $id);
+        
+        if (!empty($empleado)) {
+
+            $empleado->setActivo(true);
+            $entityManager->flush();
+        }
+
+        return new JsonResponse(['status' => 'Empleado activado!'], Response::HTTP_NO_CONTENT);
+
+    }
+
+    /**
     * @Route("/empleados/{id}", name="delete_empleado", methods={"DELETE"})
     */
     public function deleteEmpleado(int $id): JsonResponse

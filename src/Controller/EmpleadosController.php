@@ -10,6 +10,8 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
+const CLASE_EMPLEADO = 'App\Entity\Empleado';
+
 class EmpleadosController extends AbstractController {
 
     /**
@@ -18,7 +20,7 @@ class EmpleadosController extends AbstractController {
     public function getEmpleados(): Response
     {
         $entityManager = $this->getDoctrine()->getManager();
-        $repository = $entityManager->getRepository('App\Entity\Empleado');
+        $repository = $entityManager->getRepository(CLASE_EMPLEADO);
         $empleados = $repository->findBy(['activo' => true]);
 
         return $this->render('lucky/empleado.html.twig', [
@@ -33,7 +35,7 @@ class EmpleadosController extends AbstractController {
     {
         $entityManager = $this->getDoctrine()->getManager();
        
-        $empleado = $entityManager->find('App\Entity\Empleado', $id);
+        $empleado = $entityManager->find(CLASE_EMPLEADO, $id);
 
         $data = [
             'id_empleado' => $empleado->getIdEmpleado(),
@@ -84,7 +86,7 @@ class EmpleadosController extends AbstractController {
     public function updateEmpleado(int $id, Request $request): JsonResponse
     {
         $entityManager = $this->getDoctrine()->getManager();
-        $empleado = $entityManager->find('App\Entity\Empleado', $id);
+        $empleado = $entityManager->find(CLASE_EMPLEADO, $id);
 
         if (!empty($empleado)) {
 
@@ -109,7 +111,7 @@ class EmpleadosController extends AbstractController {
     public function updateToActiveEmpleado(int $id): JsonResponse
     {
         $entityManager = $this->getDoctrine()->getManager();
-        $empleado = $entityManager->find('App\Entity\Empleado', $id);
+        $empleado = $entityManager->find(CLASE_EMPLEADO, $id);
         
         if (!empty($empleado)) {
 
@@ -127,7 +129,7 @@ class EmpleadosController extends AbstractController {
     public function deleteEmpleado(int $id): JsonResponse
     {
         $entityManager = $this->getDoctrine()->getManager();
-        $empleado = $entityManager->find('App\Entity\Empleado', $id);
+        $empleado = $entityManager->find(CLASE_EMPLEADO, $id);
         
         if (!empty($empleado)) {
 

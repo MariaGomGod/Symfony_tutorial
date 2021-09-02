@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}Personas{% endblock %}</title>
+        {# Run `composer require symfony/webpack-encore-bundle`
+           and uncomment the following Encore helpers to start using Symfony UX #}
+        {% block stylesheets %}
+            {#{{ encore_entry_link_tags('app') }}#}
+        {% endblock %}
+
+        {% block javascripts %}
+            {#{{ encore_entry_script_tags('app') }}#}
+        {% endblock %}
+    </head>
+    <table>
+    <tr>
+        <th>Id_persona</th>
+        <th>Nombre</th>
+        <th>Rubia/o</th>
+        <th>Alta/o</th>
+        <th>Gafas</th>
+    </tr>
+
+    {% for persona in Personas %}
+        <tr>
+            <td>{{persona.getIdPersona()}}</td>
+            <td>{{persona.getNombre()}}</td>
+            <td>{{persona.getRubia()}}</td>
+            <td>{{persona.getAlta()}}</td>
+            <td>{{persona.getGafas()}}</td>
+        </tr>
+    {% endfor %}
+    </table>
+</html>

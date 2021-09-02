@@ -56,8 +56,8 @@ class PersonasController extends AbstractController {
         
         $data = json_decode($request->getContent(), true);
 
-        if (empty($data['id_persona']) || empty($data['nombre']) || empty($data['rubia']) ||
-            empty($data['alta']) || empty($data['gafas'])) {
+        if (!isset($data['nombre']) || !isset($data['rubia']) ||
+            !isset($data['alta']) || !isset($data['gafas'])) {
                 throw new NotFoundHttpException('Error de validación!');
         }
 
